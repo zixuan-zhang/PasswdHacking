@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# coding: utf-8
 """
 Created on Oct 5, 2014
 @Author: zixuan zhang
@@ -18,7 +20,8 @@ FILE_NAME = {
         }
 DB_HANDLER = {
         "renren": None,
-        "gmail": None
+        "gmail": None,
+        "pinyin": None
         }
 MC = None
 _LOGGER = None
@@ -29,7 +32,9 @@ def _get_db():
     #global DB_HANDLER
     DB_HANDLER["renren"] = db['renren']
     DB_HANDLER["gmail"] = db["gmail"]
+    DB_HANDLER["pinyin"] = db['pinyin']
 
+_get_db()
 
 def insert_db(data, key="renren"):
     """
@@ -96,6 +101,20 @@ def load_password(key):
         count += 1
     _LOGGER.info("Caching Password Done. Total Count: %d" % (count - 1))
 
+def save_pinin(file_name = "pinyin.txt"):
+    """
+    save pinyin elements into database
+    """
+    with open(file_name) as fp:
+        for line in fp:
+            try:
+                pinyin = line.split('\n')[0]
+                _LOGGER.info("save pinyin : %s" % pinyin)
+            except Exception, err:
+                _LOGGER.error("Pinyin Extract Error: %s %s" % (line, err))
+                continue
+            DB_HANDLER['pinyin'].insert({"pinyin": pinyin})
+
 def initialize(key = "renren"):
     """
     Initialize neccessary operations. including:
@@ -110,11 +129,11 @@ def initialize(key = "renren"):
     _LOGGER = logging.getLogger()
 
     # database initialize
-    _get_db()
 
     if not os.path.exists(SAVE_LOG):
         save_password(key) # default "renren"
         DB_HANDLER[key].create_index([("password", pymongo.ASCENDING)])
+        save_pinin("pinyin.full")
 
     # memcache initialize
     MC = memcache.Client(['127.0.0.1:11211'])
