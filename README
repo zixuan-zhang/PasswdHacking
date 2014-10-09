@@ -1,0 +1,14 @@
+/****************************************************************************
+Author: Zhang Zixuan
+Email: zixuan.zhang.victor@gmail.com
+Last Modified: 2014/10/8
+*****************************************************************************/
+1.Introduction: PasswordHacking is a analyzer to large scale passwords.
+2.Develop environment: Linux
+3.Dependency: 
+    1).memcache
+    2).python-memcached version:1.5.3
+    3).mongodb
+    4).pymongo
+4.Usage:
+    ...

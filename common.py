@@ -26,15 +26,16 @@ DB_HANDLER = {
 MC = None
 _LOGGER = None
 
+PASSWORD_COUNT = None
+
 def _get_db():
     con = pymongo.Connection("127.0.0.1")
-    db = con['password']
+    db = con['passwd']
     #global DB_HANDLER
     DB_HANDLER["renren"] = db['renren']
     DB_HANDLER["gmail"] = db["gmail"]
     DB_HANDLER["pinyin"] = db['pinyin']
 
-_get_db()
 
 def insert_db(data, key="renren"):
     """
@@ -100,8 +101,10 @@ def load_password(key):
         _LOGGER.info("Caching Count: %d, Password: %s" % (count, password))
         count += 1
     _LOGGER.info("Caching Password Done. Total Count: %d" % (count - 1))
+    global PASSWORD_COUNT
+    PASSWORD_COUNT = count
 
-def save_pinin(file_name = "pinyin.txt"):
+def save_pinin(file_name = "pinyin.full"):
     """
     save pinyin elements into database
     """
@@ -115,7 +118,7 @@ def save_pinin(file_name = "pinyin.txt"):
                 continue
             DB_HANDLER['pinyin'].insert({"pinyin": pinyin})
 
-def initialize(key = "renren"):
+def _initialize(key = "renren"):
     """
     Initialize neccessary operations. including:
         1. save password into database (if not done)
@@ -124,20 +127,22 @@ def initialize(key = "renren"):
     """
     # log format config
     FORMAT = '%(asctime)s %(levelname)s %(name)s %(message)s'
-    logging.basicConfig(filename = 'load.log', level = logging.INFO, format = FORMAT)
+    logging.basicConfig(filename = 'analyze.log', level = logging.INFO, format = FORMAT)
     global _LOGGER, MC
     _LOGGER = logging.getLogger()
 
     # database initialize
-
+    _get_db()
     if not os.path.exists(SAVE_LOG):
         save_password(key) # default "renren"
         DB_HANDLER[key].create_index([("password", pymongo.ASCENDING)])
-        save_pinin("pinyin.full")
+    save_pinin("pinyin.full")
 
     # memcache initialize
     MC = memcache.Client(['127.0.0.1:11211'])
     load_password(key)
+
+_initialize()
 
 def main():
     initialize("renren")
